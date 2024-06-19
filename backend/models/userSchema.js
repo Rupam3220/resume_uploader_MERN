@@ -1,13 +1,5 @@
 import mongoose from "mongoose";
 
-// Name
-// Email
-// DOB
-// State<
-// Gender
-// Location
-// Avatar
-
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -16,12 +8,12 @@ const userSchema = new mongoose.Schema({
         trim: true
     },
     email: {
-        type: Date,
-    },
-    dob: {
         type: String,
         required: true,
         trim: true
+    },
+    dob: {
+        type: Date,
     },
     state: {
         type: String,
