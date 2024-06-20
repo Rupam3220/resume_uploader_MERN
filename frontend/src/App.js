@@ -9,8 +9,9 @@ import {
   FormGroup, 
   FormLabel, 
   Grid, 
-  Input, 
+  // Input, 
   InputLabel, 
+  Link, 
   MenuItem, 
   Paper, 
   Radio, 
@@ -26,12 +27,14 @@ import {
   TextField, 
   Typography } from '@mui/material';
 
-  import { styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import './App.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { format } from 'date-fns';
+import { useSaveUserMutation, useRetrieveUserQuery } from './services/userProfileApi';
 
 function App() {
 
@@ -57,15 +60,39 @@ function App() {
     type: ""
   })
 
+  const [user, setUser] = useState([])
+
   // Multiple checkbox 
   const getLocation = (e) => {
-    let data = location
-    data.push(e.target.value)
-    setLocation(data)
+    const {value, checked} = e.target
+    console.log((`${value} is ${checked}`))
+    
+    // user check
+    if (checked) {
+      setLocation([...location, value])
+    }
+    // user uncheck 
+    else {
+      setLocation(location.filter((e) => e !== value))
+    }
   }
 
+
+
+  // RTK Query
+  const [saveUser] = useSaveUserMutation()
+  const {data, isSuccess} = useRetrieveUserQuery()
+  console.log(data)
+
+  useEffect(() => {
+    if (data && isSuccess) {
+      setUser(data.user)
+    }
+  }, [data, isSuccess])
+
+
   // Form submit - handleSubmit
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault()
     const data = new FormData()
     data.append('name', name)
@@ -78,35 +105,38 @@ function App() {
     data.append('resumeDoc', resumeDoc)
     console.log(data)
 
-    // Clear form after submittion
-    const clearForm = () => {
-      setName('')
-      setEmail('')
-      setDob(null)
-      setState('')
-      setGender('')
-      setLocation([])
-      setProfileImage('')
-      setResumeDoc('')
-      document.getElementById('resume-form').reset()
-    }
+  // Clear form after submittion
+  const clearForm = () => {
+    setName('')
+    setEmail('')
+    setDob(null)
+    setState('')
+    setGender('')
+    setLocation([])
+    setProfileImage('')
+    setResumeDoc('')
+    document.getElementById('resume-form').reset()
+  }
 
-    // error handling
+    // error handling for save user
     if(name && email) {
-      console.log(data.get('name'))
-      console.log(data.get('email'))
-      console.log(data.get('dob'))
-      console.log(data.get('state'))
-      console.log(data.get('gender'))
-      console.log(data.get('location'))
-      console.log(data.get('profileImage'))
-      console.log(data.get('resumeDoc'))
-      setError({status: true, message: "Resume uploaded successfully...", type: 'success'})
-      clearForm()
-    }else {
+      const res = await saveUser(data)
+      console.log(res)
+      if (res.data.status === "success") {
+        setError({status: true, message: "Resume uploaded successfully...", type: 'success'})
+        clearForm()
+      }
+      if (res.data.status === "failed") {
+        setError({ status: true, msg: res.data.message, type: 'error' })
+        clearForm()
+      }
+
+    }
+    else {
       setError({status: true, message: "All fields are required!", type: 'error'})
     }
   }
+
 
 
   return (
@@ -114,7 +144,7 @@ function App() {
 
     {/* Navbar */}
       <Box display='flex' justifyContent='left' sx={{backgroundColor: "brown", padding: 2}}>
-        <Typography variant='h5' component='div' sx={{fontWeight: 'bold', color: 'white'}}>Resume Uploader</Typography>
+        <Typography variant='h5' component='div' sx={{fontWeight: 'bold', color: 'white'}}>Job Application Portal</Typography>
       </Box>
       
     {/* Form heading */}
@@ -265,20 +295,28 @@ function App() {
                   <TableCell align='center' sx={{fontWeight: 'bold'}}>Gender</TableCell>
                   <TableCell align='center' sx={{fontWeight: 'bold'}}>Location</TableCell>
                   <TableCell align='center' sx={{fontWeight: 'bold'}}>Avatar</TableCell>
+                  <TableCell align='center' sx={{fontWeight: 'bold'}}>Resume</TableCell>
                 </TableRow>
               </TableHead>
 
               {/* Table content */}
               <TableBody>
-                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                  <TableCell component='th' scope='row'>test</TableCell>
-                  <TableCell align='center'>test@test.com</TableCell>
-                  <TableCell align='center'>17.06.2024</TableCell>
-                  <TableCell align='center'>Maharashtra</TableCell>
-                  <TableCell align='center'>Male</TableCell>
-                  <TableCell align='center'>Mumbai</TableCell>
-                  <TableCell align='center'><Avatar src='#'/></TableCell>
-                </TableRow>
+
+              {user.map((user, i) => {
+                return (
+                  <TableRow key={i} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell component='th' scope='row'>{user.name}</TableCell>
+                    <TableCell align='center'>{user.email}</TableCell>
+                    <TableCell align='center'>{format(new Date(user.dob), 'dd-MM-yyyy')}</TableCell>
+                    <TableCell align='center'>{user.state}</TableCell>
+                    <TableCell align='center'>{user.gender}</TableCell>
+                    <TableCell align='center'>{user.location}</TableCell>
+                    <TableCell align='center'><Avatar src={`http://localhost:8000/${user.profileImage}`}/></TableCell>
+                    <TableCell align='center'><Link src={`http://localhost:8000/${user.resumeDoc}`}>Download Resume</Link></TableCell>
+                  </TableRow>
+                )
+              })}
+
               </TableBody>
             </Table>
           </TableContainer>

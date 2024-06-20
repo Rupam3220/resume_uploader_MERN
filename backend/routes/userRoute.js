@@ -9,7 +9,7 @@ import upload from "../middlewares/multerMiddleware.js";
 router.use('/resume', upload.fields([{ name: 'profileImage', maxCount: 1 }, { name: 'resumeDoc', maxCount: 1 }]))
 
 
-router.post("/save-resume", userController.saveUser)
+router.post("/resume", userController.saveUser)
 router.get("/view-resume", userController.retrieveUser)
 
 export default router

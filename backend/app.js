@@ -19,11 +19,12 @@ app.use(cors())
 // database
 connectdb(DATABASE_URL)
 
+// static files
+app.use(express.static('public/uploades/profileImage'))
+app.use(express.static('public/uploades/resumeDoc'))
+
 // JSON parsing
 app.use(express.json())
-
-// middleware
-//app.use(upload.fields([{ name: 'profileImage', maxCount: 1 }, { name: 'resumeDoc', maxCount: 1 }]))
 
 // route
 app.use('/api/v2/users', userRoute)
