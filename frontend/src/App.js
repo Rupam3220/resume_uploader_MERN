@@ -10,8 +10,7 @@ import {
   FormLabel, 
   Grid, 
   // Input, 
-  InputLabel, 
-  Link, 
+  InputLabel,  
   MenuItem, 
   Paper, 
   Radio, 
@@ -312,7 +311,7 @@ function App() {
                     <TableCell align='center'>{user.gender}</TableCell>
                     <TableCell align='center'>{user.location}</TableCell>
                     <TableCell align='center'><Avatar src={`http://localhost:8000/${user.profileImage}`}/></TableCell>
-                    <TableCell align='center'><Link src={`http://localhost:8000/${user.resumeDoc}`}>Download Resume</Link></TableCell>
+                    <TableCell align='center'><a href={`http://localhost:8000/${user.resumeDoc}`}>Download Resume</a></TableCell>
                   </TableRow>
                 )
               })}
